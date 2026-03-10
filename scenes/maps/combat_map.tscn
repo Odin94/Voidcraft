@@ -1,0 +1,28 @@
+[gd_scene load_steps=3 format=3 uid="uid://combat001"]
+
+[ext_resource type="Script" path="res://scenes/maps/combat_map.gd" id="1"]
+[ext_resource type="Script" path="res://scenes/maps/map_generator.gd" id="2"]
+
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_1"]
+vertices = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+polygons = [PackedInt32Array(0, 1, 2, 3)]
+outlines = [PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)]
+
+[node name="CombatMap" type="Node2D"]
+script = ExtResource("1")
+
+[node name="Background" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.1, 0.1, 0.15, 1)
+mouse_filter = 2
+
+[node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+navigation_polygon = SubResource("NavigationPolygon_1")
+
+[node name="Obstacles" type="Node2D" parent="."]
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="MapGenerator" type="Node" parent="."]
+script = ExtResource("2")

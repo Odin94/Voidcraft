@@ -1,0 +1,259 @@
+WorkerThreadPool: 16 threads, 4 max low-priority.
+Godot Engine v4.6.1.stable.official.14d19694e - https://godotengine.org
+TextServer: Added interface "Dummy"
+TextServer: Added interface "ICU / HarfBuzz / Graphite (Built-in)"
+Unrecognized output string "misc2" in mapping:
+030000000d0f00000202000000000000,Horipad O Nintendo Switch 2 Controller,a:b1,b:b0,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b4,leftstick:b10,lefttrigger:b6,leftx:a0,lefty:a1,misc1:b13,misc2:b14,rightshoulder:b5,rightstick:b11,righttrigger:b7,rightx:a2,righty:a3,start:b9,x:b3,y:b2,platform:Windows,
+Unrecognized output string "misc2" in mapping:
+030000000d0f00009601000000000000,Horipad Steam,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:b8,leftx:a0,lefty:a1,misc2:b2,paddle1:b5,paddle2:b15,paddle3:b18,paddle4:b19,rightshoulder:b7,rightstick:b14,righttrigger:b9,rightx:a3,righty:a4,start:b11,x:b3,y:b4,platform:Windows,
+Unrecognized output string "misc2" in mapping:
+030000007e0500006920000000000000,Nintendo Switch 2 Pro Controller,a:b0,b:b1,back:b14,dpdown:b8,dpleft:b10,dpright:b9,dpup:b11,guide:b16,leftshoulder:b12,leftstick:b15,lefttrigger:b13,leftx:a0,lefty:a1~,misc1:b17,misc2:b20,paddle1:b18,paddle2:b19,rightshoulder:b4,rightstick:b7,righttrigger:b5,rightx:a2,righty:a3~,start:b6,x:b2,y:b3,platform:Windows,
+Using "default" pen tablet driver...
+
+TextServer: Primary interface set to: "ICU / HarfBuzz / Graphite (Built-in)".
+CORE API HASH: 75400357
+EDITOR API HASH: 3012763406
+SceneTreeFTI: traversal method DEFAULT
+Loading resource: res://autoloads/event_bus.gd
+WARNING: The signal "enemy_killed" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:5)
+WARNING: The signal "player_died" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:6)
+WARNING: The signal "projectile_fired" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:7)
+WARNING: The signal "map_cleared" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:10)
+WARNING: The signal "map_entered" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:11)
+WARNING: The signal "return_to_home" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:12)
+WARNING: The signal "building_placed" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:15)
+WARNING: The signal "building_removed" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:16)
+WARNING: The signal "resources_changed" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:19)
+WARNING: The signal "combat_results_shown" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:22)
+WARNING: The signal "build_menu_toggled" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:23)
+WARNING: The signal "player_state_changed" is declared but never explicitly used in the class.
+   at: GDScript::reload (res://autoloads/event_bus.gd:26)
+Loading resource: res://autoloads/game_manager.gd
+MbedTLS: Some X509 certificates could not be parsed (1 certificates skipped).
+Loaded system CA certificates
+Loading resource: res://scenes/main/main.tscn
+Loading resource: res://scenes/main/main.gd
+Loading resource: res://scenes/player/player.tscn
+Loading resource: res://scenes/player/player.gd
+Loading resource: res://scenes/projectiles/projectile.tscn
+Loading resource: res://scenes/projectiles/projectile.gd
+ERROR: res://scenes/player/player.tscn:6 - Parse Error: Can't create sub resource of type 'NavigationPathQueryParameters2D' as it's not a resource type.
+   at: _printerr (scene/resources/resource_format_text.cpp:40)
+Failed loading resource: res://scenes/player/player.tscn
+ERROR: Failed loading resource: res://scenes/player/player.tscn.
+   at: _load (core/io/resource_loader.cpp:343)
+Loading resource: res://scenes/ui/hud.tscn
+Loading resource: res://scenes/ui/hud.gd
+Loading resource: res://scenes/ui/combat_results.tscn
+Loading resource: res://scenes/ui/combat_results.gd
+Loading resource: res://scenes/ui/building_menu.tscn
+Loading resource: res://scenes/ui/building_menu.gd
+ERROR: res://scenes/main/main.tscn:14 - Parse Error: [ext_resource] referenced non-existent resource at: res://scenes/player/player.tscn.
+   at: _printerr (scene/resources/resource_format_text.cpp:40)
+WARNING: Node './Player' was modified from inside an instance, but it has vanished.
+   at: instantiate (scene/resources/packed_scene.cpp:310)
+Loading resource: res://resources/buildings/barracks.tres
+Loading resource: res://resources/buildings/forge.tres
+ERROR: Node not found: "Player" (relative to "/root/Main").
+   at: get_node (scene/main/node.cpp:1963)
+   GDScript backtrace (most recent call first):
+       [0] @implicit_ready (res://scenes/main/main.gd:5)
+SCRIPT ERROR: Cannot call method 'has_node' on a null value.
+   at: set_player (res://scenes/ui/hud.gd:19)
+   GDScript backtrace (most recent call first):
+       [0] set_player (res://scenes/ui/hud.gd:19)
+       [1] _ready (res://scenes/main/main.gd:13)
+
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> Error: Invalid command, enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
+*Frame 0 - res://scenes/ui/hud.gd:19 in function 'set_player'
+Enter "help" for assistance.
+debug> 
+Debugger Break, Reason: 'Cannot call method 'has_node' on a null value.'
