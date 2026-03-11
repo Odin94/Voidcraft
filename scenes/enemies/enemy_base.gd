@@ -20,6 +20,7 @@ var spawn_position: Vector2
 @onready var health_bar: Node2D = $HealthBar
 
 func _ready() -> void:
+	add_to_group("enemies")
 	spawn_position = global_position
 	nav_agent.velocity_computed.connect(_on_velocity_computed)
 	health_component.died.connect(_on_died)

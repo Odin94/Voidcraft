@@ -9,6 +9,7 @@ var _label: Label
 var _selection_border: ColorRect
 
 func _ready() -> void:
+	add_to_group("buildings")
 	EventBus.entity_selected.connect(_on_entity_selected)
 
 func _on_entity_selected(entity: Node2D) -> void:

@@ -4,13 +4,13 @@ extends CanvasLayer
 ## Building: name, level, upgrade button.
 
 @onready var panel: PanelContainer = $Panel
-@onready var title_label: Label = $Panel/VBox/TitleLabel
-@onready var hp_bar_bg: ColorRect = $Panel/VBox/HPBarBG
-@onready var hp_bar_fill: ColorRect = $Panel/VBox/HPBarBG/HPBarFill
-@onready var detail_label: Label = $Panel/VBox/DetailLabel
-@onready var actions_box: VBoxContainer = $Panel/VBox/ActionsBox
+@onready var title_label: Label = $Panel/HBox/VBox/TitleLabel
+@onready var hp_bar_bg: ColorRect = $Panel/HBox/VBox/HPBarBG
+@onready var hp_bar_fill: ColorRect = $Panel/HBox/VBox/HPBarBG/HPBarFill
+@onready var detail_label: Label = $Panel/HBox/VBox/DetailLabel
+@onready var actions_box: VBoxContainer = $Panel/HBox/VBox/ActionsBox
 
-const HP_BAR_MAX_WIDTH := 180.0
+const HP_BAR_MAX_WIDTH := 220.0
 
 var _selected: Node2D = null
 

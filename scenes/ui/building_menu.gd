@@ -3,7 +3,7 @@ extends CanvasLayer
 ## Visible only on the home base. Refreshes affordability live as resources change.
 
 @onready var panel: PanelContainer = $Panel
-@onready var buttons_row: HBoxContainer = $Panel/VBox/ButtonsRow
+@onready var buttons_col: VBoxContainer = $Panel/VBox/ButtonsCol
 @onready var hint_label: Label = $Panel/VBox/HintLabel
 
 var _building_data: Array[BuildingData] = []
@@ -35,18 +35,18 @@ func _load_building_data() -> void:
 	_build_buttons()
 
 func _build_buttons() -> void:
-	for child in buttons_row.get_children():
+	for child in buttons_col.get_children():
 		child.queue_free()
 	for data in _building_data:
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(120, 60)
+		btn.custom_minimum_size = Vector2(140, 55)
 		btn.pressed.connect(_on_selected.bind(data))
-		buttons_row.add_child(btn)
+		buttons_col.add_child(btn)
 	_refresh_buttons()
 
 func _refresh_buttons() -> void:
 	var i := 0
-	for child in buttons_row.get_children():
+	for child in buttons_col.get_children():
 		if i >= _building_data.size():
 			break
 		var data: BuildingData = _building_data[i]
