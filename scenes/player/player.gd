@@ -1,6 +1,6 @@
 extends CharacterBody2D
-## Player character — command queue, movement, input routing.
-## Combat logic lives in PlayerCombat; building logic lives in PlayerBuilding.
+## Player character — command queue, movement, physics.
+## Input routing lives in PlayerInput; move indicator lives in MoveIndicator.
 
 const SPEED := 200.0
 
@@ -9,15 +9,13 @@ const SPEED := 200.0
 # DEAD and PLACING_BUILDING are modes that bypass the queue entirely.
 var _dead: bool = false
 var _placing_building: bool = false
-var _attack_move_mode: bool = false
 var _command_queue: Array = []
 
 # Idle auto-attack scan throttle.
 var _idle_scan_timer: float = 0.0
 
 var nearby_teleporter: Node = null
-var _selected_entity: Node2D = null
-var _move_indicator: Node2D = null
+var _move_indicator = null  # MoveIndicator
 
 @onready var nav_agent: NavigationAgent2D = $NavigationAgent2D
 @onready var health_component: HealthComponent = $HealthComponent
@@ -25,6 +23,7 @@ var _move_indicator: Node2D = null
 @onready var combat: PlayerCombat = $PlayerCombat
 @onready var building: PlayerBuilding = $PlayerBuilding
 @onready var health_bar: Node2D = $HealthBar
+@onready var input_handler = $PlayerInput  # PlayerInput
 
 func _ready() -> void:
 	nav_agent.max_speed = SPEED
@@ -34,11 +33,10 @@ func _ready() -> void:
 	building.setup(self)
 	EventBus.map_entered.connect(_on_map_entered)
 	EventBus.return_to_home.connect(_on_return_to_home)
-	EventBus.entity_selected.connect(_on_entity_selected)
-	_move_indicator = MoveIndicatorNode.new()
-	_move_indicator.z_index = 10
-	_move_indicator.visible = false
+	_move_indicator = preload("res://scenes/ui/move_indicator.gd").new()
+	_move_indicator.setup(self)
 	get_tree().current_scene.add_child.call_deferred(_move_indicator)
+	input_handler.setup(self, combat, building)
 	EventBus.entity_selected.emit(self)
 
 func _physics_process(delta: float) -> void:
@@ -50,7 +48,7 @@ func _physics_process(delta: float) -> void:
 	if _command_queue.is_empty():
 		velocity = Vector2.ZERO
 		move_and_slide()
-		_hide_move_indicator()
+		_move_indicator.hide_indicator()
 		# Idle auto-attack: scan for nearby enemies and chase/attack them.
 		_idle_scan_timer -= delta
 		if _idle_scan_timer <= 0.0:
@@ -65,155 +63,36 @@ func _physics_process(delta: float) -> void:
 	if not _command_queue[0].tick(delta):
 		_command_queue.pop_front()
 
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		print("[Player] input: button=%d pos=%s dead=%s placing=%s atkmove=%s queue=%d" % [
-			event.button_index,
-			str(get_global_mouse_position().snapped(Vector2.ONE)),
-			str(_dead), str(_placing_building), str(_attack_move_mode), _command_queue.size()
-		])
 
-	if _dead:
-		return
+# ── Public command-queue API (called by PlayerInput) ──────────────────────────
 
-	if _placing_building:
-		if event.is_action_pressed("right_click") or event.is_action_pressed("left_click"):
-			print("[Player] PLACING_BUILDING: confirm")
-			building.confirm()
-			_exit_placing()
-			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("cancel"):
-			print("[Player] PLACING_BUILDING: cancel")
-			building.cancel()
-			_exit_placing()
-			get_viewport().set_input_as_handled()
-		return
+func queue_move_to(pos: Vector2) -> void:
+	_command_queue.clear()
+	nav_agent.target_position = pos
+	_command_queue.append(MoveToCommand.new(self, nav_agent, sprite))
+	_move_indicator.show_at(pos, false)
 
-	# Enter attack-move mouse state (only when player itself is selected)
-	if event.is_action_pressed("attack_move") and _selected_entity == self:
-		print("[Player] entering attack-move mode")
-		_attack_move_mode = true
-		Input.set_default_cursor_shape(Input.CURSOR_CROSS)
-		get_viewport().set_input_as_handled()
-		return
+func queue_attack(target: Node2D) -> void:
+	_command_queue.clear()
+	_move_indicator.hide_indicator()
+	_command_queue.append(MoveToRangeCommand.new(self, nav_agent, sprite, target))
+	_command_queue.append(AttackCommand.new(self, sprite, combat, target, _command_queue, _make_move_to_range_cmd))
 
-	# Hold position command (only when player is selected)
-	if event.is_action_pressed("hold_position") and _selected_entity == self:
-		print("[Player] hold position")
-		_command_queue.clear()
-		_hide_move_indicator()
-		_command_queue.append(HoldPositionCommand.new(self, sprite, combat))
-		get_viewport().set_input_as_handled()
-		return
+func queue_attack_move(pos: Vector2) -> void:
+	_command_queue.clear()
+	_command_queue.append(AttackMoveCommand.new(self, nav_agent, sprite, combat, pos))
+	_move_indicator.show_at(pos, true)
 
-	if is_instance_valid(_selected_entity) and _selected_entity != self:
-		if event.is_action_pressed("cancel"):
-			print("[Player] ESC with building selected — reselecting player")
-			EventBus.entity_selected.emit(self)
-			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("left_click"):
-			print("[Player] left_click with building selected — reselecting player")
-			_handle_left_click()
-			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("right_click"):
-			print("[Player] right_click forwarded to building: %s" % _selected_entity.name)
-			_selected_entity.handle_input(event)
-			get_viewport().set_input_as_handled()
-		return
+func queue_hold_position() -> void:
+	_command_queue.clear()
+	_move_indicator.hide_indicator()
+	_command_queue.append(HoldPositionCommand.new(self, sprite, combat))
 
-	# Attack-move mouse state: left-click issues command, right-click cancels
-	if _attack_move_mode:
-		if event.is_action_pressed("right_click"):
-			print("[Player] attack-move mode: cancelled")
-			_exit_attack_move_mode()
-			get_viewport().set_input_as_handled()
-		elif event.is_action_pressed("left_click"):
-			var click_pos := get_global_mouse_position()
-			var enemy := combat.find_enemy_at(click_pos)
-			if enemy:
-				print("[Player] attack-move mode: left_click on enemy → regular attack on %s" % enemy.name)
-				_command_queue.clear()
-				_hide_move_indicator()
-				_command_queue.append(MoveToRangeCommand.new(self, nav_agent, sprite, enemy))
-				_command_queue.append(AttackCommand.new(self, sprite, combat, enemy, _command_queue, _make_move_to_range_cmd))
-			else:
-				print("[Player] attack-move → %s" % str(click_pos.snapped(Vector2.ONE)))
-				_command_queue.clear()
-				_command_queue.append(AttackMoveCommand.new(self, nav_agent, sprite, combat, click_pos))
-				_show_move_indicator(click_pos, true)
-			_exit_attack_move_mode()
-			get_viewport().set_input_as_handled()
-		return
-
-	if event.is_action_pressed("left_click"):
-		_handle_left_click()
-		get_viewport().set_input_as_handled()
-
-	if event.is_action_pressed("right_click"):
-		_handle_right_click()
-		get_viewport().set_input_as_handled()
-
-func _handle_left_click() -> void:
-	var click_pos := get_global_mouse_position()
-	var hit_building := _find_building_at(click_pos)
-	if hit_building:
-		print("[Player] left_click → selecting building: %s" % hit_building.name)
-		EventBus.entity_selected.emit(hit_building)
-	else:
-		print("[Player] left_click on empty space — reselecting player")
-		EventBus.entity_selected.emit(self)
-
-func _find_building_at(pos: Vector2) -> Node2D:
-	var space := get_world_2d().direct_space_state
-	var query := PhysicsPointQueryParameters2D.new()
-	query.position = pos
-	query.collision_mask = 32  # Layer 6 (Building)
-	query.collide_with_bodies = true
-	query.collide_with_areas = false
-	var results := space.intersect_point(query, 1)
-	if results.size() > 0:
-		return results[0].collider as Node2D
-	return null
-
-func _handle_right_click() -> void:
-	if nearby_teleporter and GameManager.current_state == GameManager.GameState.HOME:
-		print("[Player] right_click → activating teleporter")
-		nearby_teleporter.activate()
-		return
-
-	var click_pos := get_global_mouse_position()
-	var enemy := combat.find_enemy_at(click_pos)
-	if enemy:
-		print("[Player] right_click → queuing attack on: %s" % enemy.name)
-		_command_queue.clear()
-		_hide_move_indicator()
-		_command_queue.append(MoveToRangeCommand.new(self, nav_agent, sprite, enemy))
-		_command_queue.append(AttackCommand.new(self, sprite, combat, enemy, _command_queue, _make_move_to_range_cmd))
-	else:
-		print("[Player] right_click → moving to %s" % str(click_pos.snapped(Vector2.ONE)))
-		_command_queue.clear()
-		nav_agent.target_position = click_pos
-		_command_queue.append(MoveToCommand.new(self, nav_agent, sprite))
-		_show_move_indicator(click_pos, false)
 
 ## Factory passed to AttackCommand so it can re-queue an approach without
 ## needing a direct reference to the MoveToRangeCommand inner class.
 func _make_move_to_range_cmd(target: Node2D) -> Object:
 	return MoveToRangeCommand.new(self, nav_agent, sprite, target)
-
-func _show_move_indicator(pos: Vector2, is_attack_move: bool) -> void:
-	if _move_indicator == null:
-		return
-	_move_indicator.global_position = pos
-	var ind := _move_indicator as MoveIndicatorNode
-	if ind:
-		ind.color = Color(1.0, 0.5, 0.0) if is_attack_move else Color.GREEN
-		ind.queue_redraw()
-	_move_indicator.visible = (_selected_entity == self)
-
-func _hide_move_indicator() -> void:
-	if _move_indicator != null:
-		_move_indicator.visible = false
 
 func start_placing_building(data: BuildingData) -> void:
 	print("[Player] entering PLACING_BUILDING for: %s" % data.display_name)
@@ -235,40 +114,23 @@ func _exit_placing() -> void:
 	_placing_building = false
 	EventBus.player_state_changed.emit(0)
 
-func _exit_attack_move_mode() -> void:
-	_attack_move_mode = false
-	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
-
 func _on_health_changed(current: float, max_hp: float) -> void:
 	health_bar.update_bar(current, max_hp)
 
 func _on_map_entered(_type: String, _depth: int) -> void:
 	health_bar.visible = true
 	health_bar.update_bar(health_component.current_hp, health_component.max_hp)
-	_hide_move_indicator()
+	_move_indicator.hide_indicator()
 
 func _on_return_to_home() -> void:
 	health_bar.visible = false
-	_hide_move_indicator()
+	_move_indicator.hide_indicator()
 
 func _on_died() -> void:
 	_dead = true
 	_command_queue.clear()
-	_hide_move_indicator()
-	if _attack_move_mode:
-		_exit_attack_move_mode()
+	_move_indicator.hide_indicator()
 	EventBus.player_died.emit()
-
-func _on_entity_selected(entity: Node2D) -> void:
-	_selected_entity = entity
-	print("[Player] Selection changed to: %s" % (entity.name if is_instance_valid(entity) else "none"))
-	if entity != self:
-		_hide_move_indicator()
-	elif _move_indicator != null and not _command_queue.is_empty():
-		# Reselected player while a move command is active — restore the indicator.
-		var front = _command_queue[0]
-		if front is MoveToCommand or front is AttackMoveCommand:
-			_move_indicator.visible = true
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
@@ -483,16 +345,3 @@ class HoldPositionCommand:
 				_attack_timer = PlayerCombat.ATTACK_COOLDOWN
 
 		return true  # Never self-terminates
-
-
-# ── Visual helpers ─────────────────────────────────────────────────────────────
-
-class MoveIndicatorNode extends Node2D:
-	## Small crosshair drawn at the movement destination.
-	var color: Color = Color.GREEN
-
-	func _draw() -> void:
-		var r := 10.0
-		draw_arc(Vector2.ZERO, r, 0.0, TAU, 24, color, 2.0)
-		draw_line(Vector2(-6.0, 0.0), Vector2(6.0, 0.0), color, 2.0)
-		draw_line(Vector2(0.0, -6.0), Vector2(0.0, 6.0), color, 2.0)

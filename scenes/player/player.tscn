@@ -1,10 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://player001"]
+[gd_scene load_steps=6 format=3 uid="uid://player001"]
 
 [ext_resource type="Script" path="res://scenes/player/player.gd" id="1"]
 [ext_resource type="Script" path="res://components/health_component.gd" id="2"]
 [ext_resource type="Script" path="res://scenes/player/player_combat.gd" id="3"]
 [ext_resource type="Script" path="res://scenes/player/player_building.gd" id="4"]
 [ext_resource type="Script" path="res://scenes/ui/health_bar.gd" id="5"]
+[ext_resource type="Script" path="res://scenes/player/player_input.gd" id="6"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_1"]
 radius = 12.0
@@ -41,3 +42,6 @@ visible = false
 bar_width = 60.0
 bar_height = 6.0
 offset = Vector2(0, -30)
+
+[node name="PlayerInput" type="Node" parent="."]
+script = ExtResource("6")
