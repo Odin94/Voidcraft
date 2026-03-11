@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(C:/Users/kamme/Desktop/repos/Games/Godot_v4.6.1-stable_win64_console.exe:*)"
+      "Bash(C:/Users/kamme/Desktop/repos/Games/Godot_v4.6.1-stable_win64_console.exe:*)",
+      "Bash(timeout 5 C:/Users/kamme/Desktop/repos/Games/Godot_v4.6.1-stable_win64_console.exe --headless --check-only --path \"C:/Users/kamme/Desktop/repos/Games/voidcraft\" 2>&1 | grep -v \"^ERROR: BUG:\" | grep -v \"^WARNING: A Thread\" | grep -v \"RID allocations\" | grep -v \"Pages in use\" | grep -v \"^$\")"
     ]
   }
 }

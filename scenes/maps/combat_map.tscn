@@ -1,12 +1,24 @@
-[gd_scene load_steps=3 format=3 uid="uid://combat001"]
+[gd_scene load_steps=7 format=3 uid="uid://combat001"]
 
 [ext_resource type="Script" path="res://scenes/maps/combat_map.gd" id="1"]
 [ext_resource type="Script" path="res://scenes/maps/map_generator.gd" id="2"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_1"]
-vertices = PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)
+vertices = PackedVector2Array(20, 20, 1260, 20, 1260, 700, 20, 700)
 polygons = [PackedInt32Array(0, 1, 2, 3)]
-outlines = [PackedVector2Array(0, 0, 1280, 0, 1280, 720, 0, 720)]
+outlines = [PackedVector2Array(20, 20, 1260, 20, 1260, 700, 20, 700)]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_WallTop"]
+size = Vector2(1320, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_WallBottom"]
+size = Vector2(1320, 20)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_WallLeft"]
+size = Vector2(20, 760)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_WallRight"]
+size = Vector2(20, 760)
 
 [node name="CombatMap" type="Node2D"]
 script = ExtResource("1")
@@ -19,6 +31,40 @@ mouse_filter = 2
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
 navigation_polygon = SubResource("NavigationPolygon_1")
+
+[node name="MapBoundaryWalls" type="Node2D" parent="."]
+
+[node name="WallTop" type="StaticBody2D" parent="MapBoundaryWalls"]
+position = Vector2(640, -10)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MapBoundaryWalls/WallTop"]
+shape = SubResource("RectangleShape2D_WallTop")
+
+[node name="WallBottom" type="StaticBody2D" parent="MapBoundaryWalls"]
+position = Vector2(640, 730)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MapBoundaryWalls/WallBottom"]
+shape = SubResource("RectangleShape2D_WallBottom")
+
+[node name="WallLeft" type="StaticBody2D" parent="MapBoundaryWalls"]
+position = Vector2(-10, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MapBoundaryWalls/WallLeft"]
+shape = SubResource("RectangleShape2D_WallLeft")
+
+[node name="WallRight" type="StaticBody2D" parent="MapBoundaryWalls"]
+position = Vector2(1290, 360)
+collision_layer = 1
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MapBoundaryWalls/WallRight"]
+shape = SubResource("RectangleShape2D_WallRight")
 
 [node name="Obstacles" type="Node2D" parent="."]
 
