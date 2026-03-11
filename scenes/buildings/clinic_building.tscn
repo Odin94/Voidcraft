@@ -1,0 +1,8 @@
+[gd_scene format=3 uid="uid://clnc001"]
+
+[ext_resource type="Script" path="res://scenes/buildings/clinic_building.gd" id="1"]
+
+[node name="ClinicBuilding" type="StaticBody2D"]
+collision_layer = 32
+collision_mask = 0
+script = ExtResource("1")

@@ -2,8 +2,8 @@ extends Node
 ## Tracks player resources (crystals, metal, etc).
 
 var _resources: Dictionary = {
-	"crystal": 50,
-	"metal": 30,
+	"crystal": 350,
+	"metal": 330,
 }
 
 func get_amount(resource_name: String) -> int:

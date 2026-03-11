@@ -50,29 +50,43 @@ func _show_player(player: Node2D) -> void:
 
 func _show_building(building: Node2D) -> void:
 	var data: BuildingData = building.building_data
-	var lvl: int = building.level
-	title_label.text = "%s  Lv %d / %d" % [data.display_name, lvl, data.max_level]
 	_set_hp(0.0, 0.0)  # Buildings don't have HP
 	hp_bar_bg.visible = false
-	detail_label.text = data.description if data.description != "" else "No description."
 
-	if lvl < data.max_level:
-		var cost: Dictionary = building.get_upgrade_cost()
-		var cost_text := ""
-		for key in cost:
-			cost_text += "%s: %d  " % [key.capitalize(), cost[key]]
-		var can := ResourceManager.can_afford_dict(cost)
-		var btn := Button.new()
-		btn.text = "Upgrade  (%s)" % cost_text.strip_edges()
-		btn.disabled = not can
-		btn.modulate.a = 1.0 if can else 0.5
-		btn.pressed.connect(_on_upgrade_pressed.bind(building))
-		actions_box.add_child(btn)
+	if building.has_method("get_building_actions"):
+		title_label.text = data.display_name
+		detail_label.text = data.description if data.description != "" else ""
+		for action in building.get_building_actions():
+			var btn := Button.new()
+			btn.text = action["label"]
+			btn.disabled = not action["enabled"]
+			btn.modulate.a = 1.0 if action["enabled"] else 0.5
+			btn.pressed.connect(func():
+				action["callback"].call()
+				_refresh()
+			)
+			actions_box.add_child(btn)
 	else:
-		var lbl := Label.new()
-		lbl.text = "Max level reached"
-		lbl.add_theme_font_size_override("font_size", 11)
-		actions_box.add_child(lbl)
+		var lvl: int = building.level
+		title_label.text = "%s  Lv %d / %d" % [data.display_name, lvl, data.max_level]
+		detail_label.text = data.description if data.description != "" else "No description."
+		if lvl < data.max_level:
+			var cost: Dictionary = building.get_upgrade_cost()
+			var cost_text := ""
+			for key in cost:
+				cost_text += "%s: %d  " % [key.capitalize(), cost[key]]
+			var can := ResourceManager.can_afford_dict(cost)
+			var btn := Button.new()
+			btn.text = "Upgrade  (%s)" % cost_text.strip_edges()
+			btn.disabled = not can
+			btn.modulate.a = 1.0 if can else 0.5
+			btn.pressed.connect(_on_upgrade_pressed.bind(building))
+			actions_box.add_child(btn)
+		else:
+			var lbl := Label.new()
+			lbl.text = "Max level reached"
+			lbl.add_theme_font_size_override("font_size", 11)
+			actions_box.add_child(lbl)
 
 func _on_upgrade_pressed(building: Node2D) -> void:
 	if building.upgrade():

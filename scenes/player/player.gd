@@ -4,6 +4,8 @@ extends CharacterBody2D
 
 const SPEED := 200.0
 
+var _speed_bonus: float = 0.0
+
 # Instead of a state machine, the player executes commands from a queue.
 # Each command's tick() returns true while running, false when done (auto-popped).
 # DEAD and PLACING_BUILDING are modes that bypass the queue entirely.
@@ -102,6 +104,27 @@ func start_placing_building(data: BuildingData) -> void:
 	# building_menu.gd listens for value 3 = PLACING_BUILDING
 	EventBus.player_state_changed.emit(3)
 
+func get_speed() -> float:
+	return SPEED + _speed_bonus
+
+func apply_damage_upgrade(amount: float) -> void:
+	combat.damage += amount
+	print("[Player] damage upgraded to %.1f" % combat.damage)
+
+func apply_speed_upgrade(amount: float) -> void:
+	_speed_bonus += amount
+	nav_agent.max_speed = SPEED + _speed_bonus
+	print("[Player] speed upgraded to %.1f" % (SPEED + _speed_bonus))
+
+func apply_health_upgrade(amount: float) -> void:
+	health_component.max_hp += amount
+	health_component.current_hp = minf(health_component.current_hp + amount, health_component.max_hp)
+	health_component.health_changed.emit(health_component.current_hp, health_component.max_hp)
+	print("[Player] max HP upgraded to %.1f" % health_component.max_hp)
+
+func heal_player(amount: float) -> void:
+	health_component.heal(amount)
+
 func face_direction(dir: Vector2) -> void:
 	if dir.length() > 0.1:
 		sprite.rotation = dir.angle() + PI / 2
@@ -153,7 +176,7 @@ class MoveToCommand:
 			return false
 		var next_pos := _nav_agent.get_next_path_position()
 		var dir := _player.global_position.direction_to(next_pos)
-		_player.velocity = dir * 200.0
+		_player.velocity = dir * _player.get_speed()
 		_player.move_and_slide()
 		if dir.length() > 0.1:
 			_sprite.rotation = dir.angle() + PI / 2
@@ -184,7 +207,7 @@ class MoveToRangeCommand:
 		_nav_agent.target_position = _target.global_position
 		var next_pos := _nav_agent.get_next_path_position()
 		var dir := _player.global_position.direction_to(next_pos)
-		_player.velocity = dir * 200.0
+		_player.velocity = dir * _player.get_speed()
 		_player.move_and_slide()
 		if dir.length() > 0.1:
 			_sprite.rotation = dir.angle() + PI / 2
@@ -294,7 +317,7 @@ class AttackMoveCommand:
 			return false
 		var next_pos := _nav_agent.get_next_path_position()
 		var dir := _player.global_position.direction_to(next_pos)
-		_player.velocity = dir * 200.0
+		_player.velocity = dir * _player.get_speed()
 		_player.move_and_slide()
 		if dir.length() > 0.1:
 			_sprite.rotation = dir.angle() + PI / 2

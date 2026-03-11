@@ -6,6 +6,8 @@ const ATTACK_RANGE := 150.0
 const ATTACK_COOLDOWN := 0.5
 const PROJECTILE_SCENE := preload("res://scenes/projectiles/projectile.tscn")
 
+var damage: float = 15.0
+
 var _player: CharacterBody2D
 var _sprite: Polygon2D
 
@@ -20,7 +22,7 @@ func fire_at(target: Node2D) -> void:
 	var proj := PROJECTILE_SCENE.instantiate()
 	proj.global_position = _player.global_position
 	proj.direction = _player.global_position.direction_to(target.global_position)
-	proj.damage = 15.0
+	proj.damage = damage
 	proj.source = "player"
 	_player.get_tree().current_scene.add_child(proj)
 	EventBus.projectile_fired.emit(proj)

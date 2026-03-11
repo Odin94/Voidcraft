@@ -26,3 +26,11 @@
 * Random spread shots
 * Screenshake
 * Knockbacks
+
+
+## Progression
+* Have 3-4 categories of maps that you can go deeper in
+* Progressively get harder, encouraging that you switch between lower levels of them
+* Unlock new buildings / upgrades by beating bosses
+* Maybe have some sort of small story attached to each place (like Darkest Dungeon)
+* Have per-run upgrades you can pick at the end of each map that get reset when you die/leave

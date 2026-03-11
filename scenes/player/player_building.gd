@@ -4,6 +4,10 @@ extends Node
 
 const GRID_SIZE := 32
 const BUILDING_SCENE := preload("res://scenes/buildings/building_base.tscn")
+const BUILDING_SCENES: Dictionary = {
+	"Forge":  preload("res://scenes/buildings/forge_building.tscn"),
+	"Clinic": preload("res://scenes/buildings/clinic_building.tscn"),
+}
 
 var placing_data: BuildingData = null
 
@@ -51,7 +55,8 @@ func confirm() -> bool:
 	var pos := _ghost.global_position
 	print("[PlayerBuilding] placing %s at %s" % [placing_data.display_name, str(pos.snapped(Vector2.ONE))])
 	ResourceManager.spend_dict(placing_data.cost)
-	var building := BUILDING_SCENE.instantiate()
+	var scene: PackedScene = BUILDING_SCENES.get(placing_data.display_name, BUILDING_SCENE)
+	var building := scene.instantiate()
 	building.global_position = pos
 	building.setup(placing_data)
 	_add_to_map(building)
