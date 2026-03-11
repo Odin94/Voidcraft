@@ -15,11 +15,13 @@ func setup(player: CharacterBody2D) -> void:
 
 ## Begin placing a building: spawns the ghost preview snapped to cursor immediately.
 func start_placing(data: BuildingData) -> void:
+	print("[PlayerBuilding] start_placing: %s" % data.display_name)
 	placing_data = data
 	var rect := ColorRect.new()
 	rect.size = Vector2(data.size) * GRID_SIZE
 	rect.color = Color(data.color.r, data.color.g, data.color.b, 0.5)
 	rect.position = -rect.size / 2
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ghost = Node2D.new()
 	_ghost.add_child(rect)
 	# Set position before adding to scene so it never appears at (0,0)
@@ -40,20 +42,27 @@ func process() -> void:
 ## Attempt to confirm placement. Returns true if placement succeeded.
 func confirm() -> bool:
 	if not placing_data:
+		print("[PlayerBuilding] confirm: no placing_data, cancelling")
 		cancel()
 		return false
 	if not ResourceManager.can_afford_dict(placing_data.cost):
+		print("[PlayerBuilding] confirm: cannot afford %s — placement denied" % placing_data.display_name)
 		return false
+	var pos := _ghost.global_position
+	print("[PlayerBuilding] placing %s at %s" % [placing_data.display_name, str(pos.snapped(Vector2.ONE))])
 	ResourceManager.spend_dict(placing_data.cost)
 	var building := BUILDING_SCENE.instantiate()
-	building.global_position = _ghost.global_position
+	building.global_position = pos
 	building.setup(placing_data)
 	_add_to_map(building)
-	EventBus.building_placed.emit(building, Vector2i(_ghost.global_position / GRID_SIZE))
+	EventBus.building_placed.emit(building, Vector2i(pos / GRID_SIZE))
+	print("[PlayerBuilding] building_placed emitted for: %s" % placing_data.display_name)
 	cancel()
 	return true
 
 func cancel() -> void:
+	if placing_data:
+		print("[PlayerBuilding] cancel: clearing ghost for %s" % placing_data.display_name)
 	if _ghost and is_instance_valid(_ghost):
 		_ghost.queue_free()
 	_ghost = null

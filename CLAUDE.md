@@ -64,3 +64,5 @@ Report to me if any of these scripts seem broken
 - Always use GDScript 2.0 (Godot 4) syntax.
 - If a compilation error occurs, run the "Check All Scripts" command to see the full log.
 - Add debug logs to the game in places that don't loop infinitely (eg. log all player input, log state changes etc.) to have an overview of what happened in a given run of the game
+- **Control node mouse filter:** Any `Control` node (e.g. `ColorRect`, `Label`) used purely as a visual overlay must have `mouse_filter = Control.MOUSE_FILTER_IGNORE` set in code. Otherwise it silently consumes clicks and breaks input handling underneath it.
+- **Physics object picking:** `CollisionObject2D._input_event()` is disabled by default in Godot 4. `get_viewport().physics_object_picking = true` must be set (done in `main.gd`) for click events to reach physics bodies.

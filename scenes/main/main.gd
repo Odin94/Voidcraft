@@ -9,6 +9,7 @@ extends Node2D
 @onready var building_menu: CanvasLayer = $UILayer/BuildingMenu
 
 func _ready() -> void:
+	get_viewport().physics_object_picking = true
 	GameManager.setup(map_container, player)
 	hud.set_player(player)
 	building_menu.set_player(player)
