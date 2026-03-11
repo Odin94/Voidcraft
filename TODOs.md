@@ -18,8 +18,11 @@
 
 
 ## Make UI pretty & usable / make controls better
-* A-click and a-move
-* Click indicator
-* Custom cursor that changes
-* Hold position
-* Auto-attack
+
+
+
+## Juice it up!
+* Explosions
+* Random spread shots
+* Screenshake
+* Knockbacks
