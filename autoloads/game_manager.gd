@@ -7,6 +7,11 @@ var current_state: GameState = GameState.HOME
 var combat_depth: int = 0
 var pending_rewards: Dictionary = {}
 
+# XP / level system
+var player_xp: int = 0
+var player_level: int = 1
+const XP_TO_LEVEL_UP: int = 50
+
 var _map_container: Node2D
 var _player: CharacterBody2D
 
@@ -57,6 +62,14 @@ func get_reward_multiplier() -> float:
 
 func get_enemy_count() -> int:
 	return 3 + combat_depth * 2
+
+func add_player_xp(amount: int) -> void:
+	player_xp += amount
+	var new_level := 1 + player_xp / XP_TO_LEVEL_UP
+	while player_level < new_level:
+		player_level += 1
+		print("[GameManager] player leveled up to %d (total XP: %d)" % [player_level, player_xp])
+		EventBus.player_leveled_up.emit(player_level)
 
 func _load_combat_map() -> void:
 	change_state(GameState.COMBAT)

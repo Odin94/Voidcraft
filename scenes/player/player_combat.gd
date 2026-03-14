@@ -8,6 +8,9 @@ const PROJECTILE_SCENE := preload("res://scenes/projectiles/projectile.tscn")
 
 var damage: float = 15.0
 
+## Set by the Deadly Strike skill. Each attack has this probability to deal 2× damage.
+var double_damage_chance: float = 0.0
+
 var _player: CharacterBody2D
 var _sprite: Polygon2D
 
@@ -19,10 +22,14 @@ func setup(player: CharacterBody2D, sprite: Polygon2D) -> void:
 func fire_at(target: Node2D) -> void:
 	if not is_instance_valid(target):
 		return
+	var actual_damage := damage
+	if double_damage_chance > 0.0 and randf() < double_damage_chance:
+		actual_damage *= 2.0
+		print("[PlayerCombat] Deadly Strike! %.1f damage" % actual_damage)
 	var proj := PROJECTILE_SCENE.instantiate()
 	proj.global_position = _player.global_position
 	proj.direction = _player.global_position.direction_to(target.global_position)
-	proj.damage = damage
+	proj.damage = actual_damage
 	proj.source = "player"
 	_player.get_tree().current_scene.add_child(proj)
 	EventBus.projectile_fired.emit(proj)

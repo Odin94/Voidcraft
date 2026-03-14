@@ -24,6 +24,14 @@ signal build_menu_toggled(is_open: bool)
 
 # Player signals
 signal player_state_changed(new_state: int)
+signal player_leveled_up(new_level: int)
+
+# Skill tree signals
+signal skill_changed(level: int, option: int)
+signal skill_level_unlocked(level: int)
+signal active_abilities_changed(abilities: Array)
+signal ability_targeting_started()
+signal ability_targeting_cancelled()
 
 # Selection signals
 signal entity_selected(entity: Node2D)

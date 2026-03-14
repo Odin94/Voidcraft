@@ -11,3 +11,4 @@ extends Resource
 @export var attack_cooldown: float = 1.0
 @export var color: Color = Color.RED
 @export var rewards: Dictionary = { "crystal": 5 }
+@export var xp_reward: int = 10

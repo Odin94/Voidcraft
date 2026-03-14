@@ -11,6 +11,7 @@ extends Node2D
 func _ready() -> void:
 	get_viewport().physics_object_picking = true
 	GameManager.setup(map_container, player)
+	SkillTree.setup(player)
 	hud.set_player(player)
 	building_menu.set_player(player)
 	# Load home base

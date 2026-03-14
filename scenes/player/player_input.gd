@@ -41,6 +41,19 @@ func _unhandled_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 		return
 
+	# Ability targeting mode: left-click fires ability, right-click/ESC cancels
+	if _player._targeting_ability != null:
+		if event.is_action_pressed("left_click"):
+			var click_pos := _player.get_global_mouse_position()
+			print("[Player] ability targeting: activate at %s" % str(click_pos.snapped(Vector2.ONE)))
+			_player.use_ability_at(click_pos)
+			get_viewport().set_input_as_handled()
+		elif event.is_action_pressed("right_click") or event.is_action_pressed("cancel"):
+			print("[Player] ability targeting: cancelled")
+			_player.cancel_ability_targeting()
+			get_viewport().set_input_as_handled()
+		return  # Consume all other input while targeting
+
 	# Enter attack-move mouse state (only when player itself is selected)
 	if event.is_action_pressed("attack_move") and _selected_entity == _player:
 		print("[Player] entering attack-move mode")

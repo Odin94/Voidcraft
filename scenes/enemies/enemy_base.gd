@@ -139,5 +139,6 @@ func _on_died() -> void:
 	if enemy_data:
 		for key in enemy_data.rewards:
 			rewards[key] = int(enemy_data.rewards[key] * GameManager.get_reward_multiplier())
+		GameManager.add_player_xp(enemy_data.xp_reward)
 	GameManager.add_pending_rewards(rewards)
 	queue_free()

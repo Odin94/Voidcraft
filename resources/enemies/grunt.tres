@@ -1,15 +1,11 @@
-[gd_resource type="Resource" script_class="EnemyData" load_steps=2 format=3]
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://mf1cy2wmxi8j"]
 
-[ext_resource type="Script" path="res://resources/enemy_data.gd" id="1"]
+[ext_resource type="Script" uid="uid://bhpq50d8t2li5" path="res://resources/enemy_data.gd" id="1"]
 
 [resource]
 script = ExtResource("1")
 display_name = "Grunt"
-hp = 50.0
-damage = 10.0
 speed = 100.0
-attack_range = 40.0
-aggro_range = 200.0
 attack_cooldown = 1.2
 color = Color(0.9, 0.2, 0.2, 1)
-rewards = { "crystal": 5 }
+xp_reward = 15

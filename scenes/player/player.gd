@@ -19,6 +19,12 @@ var _idle_scan_timer: float = 0.0
 var nearby_teleporter: Node = null
 var _move_indicator = null  # MoveIndicator
 
+# Active abilities registered by skills.
+var _active_abilities: Array = []
+# Non-null while the player is selecting a target position for an active skill.
+var _targeting_ability = null  # SkillBase or null
+var _range_indicator: Node2D = null
+
 @onready var nav_agent: NavigationAgent2D = $NavigationAgent2D
 @onready var health_component: HealthComponent = $HealthComponent
 @onready var sprite: Polygon2D = $Sprite
@@ -90,6 +96,12 @@ func queue_hold_position() -> void:
 	_move_indicator.hide_indicator()
 	_command_queue.append(HoldPositionCommand.new(self, sprite, combat))
 
+func queue_blink_to(target_pos: Vector2, skill) -> void:
+	_command_queue.clear()
+	nav_agent.target_position = target_pos
+	_command_queue.append(BlinkMoveCommand.new(self, nav_agent, sprite, target_pos, skill))
+	_move_indicator.show_at(target_pos, false)
+
 
 ## Factory passed to AttackCommand so it can re-queue an approach without
 ## needing a direct reference to the MoveToRangeCommand inner class.
@@ -125,6 +137,57 @@ func apply_health_upgrade(amount: float) -> void:
 func heal_player(amount: float) -> void:
 	health_component.heal(amount)
 
+# ── Active ability API (called by skills and PlayerInput) ──────────────────────
+
+func register_active_ability(skill) -> void:
+	if skill not in _active_abilities:
+		_active_abilities.append(skill)
+		EventBus.active_abilities_changed.emit(_active_abilities)
+		print("[Player] registered active ability: %s" % skill.display_name)
+
+func unregister_active_ability(skill) -> void:
+	if skill == _targeting_ability:
+		cancel_ability_targeting()
+	_active_abilities.erase(skill)
+	EventBus.active_abilities_changed.emit(_active_abilities)
+	print("[Player] unregistered active ability: %s" % skill.display_name)
+
+func start_ability_targeting(skill) -> void:
+	_targeting_ability = skill
+	Input.set_default_cursor_shape(Input.CURSOR_CROSS)
+	if skill.targeting_range > 0.0:
+		_show_range_indicator(skill.targeting_range, skill.icon_color)
+	EventBus.ability_targeting_started.emit()
+	print("[Player] targeting mode: %s" % skill.display_name)
+
+func cancel_ability_targeting() -> void:
+	if _targeting_ability != null:
+		_targeting_ability = null
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		_hide_range_indicator()
+		EventBus.ability_targeting_cancelled.emit()
+		print("[Player] targeting mode cancelled")
+
+func use_ability_at(world_pos: Vector2) -> void:
+	if _targeting_ability != null:
+		var skill = _targeting_ability
+		_targeting_ability = null
+		Input.set_default_cursor_shape(Input.CURSOR_ARROW)
+		_hide_range_indicator()
+		_command_queue.clear()
+		skill.activate(self, world_pos)
+		EventBus.ability_targeting_cancelled.emit()
+
+func _show_range_indicator(radius: float, color: Color) -> void:
+	_hide_range_indicator()
+	_range_indicator = RangeIndicator.new(radius, color)
+	add_child(_range_indicator)
+
+func _hide_range_indicator() -> void:
+	if is_instance_valid(_range_indicator):
+		_range_indicator.queue_free()
+	_range_indicator = null
+
 func face_direction(dir: Vector2) -> void:
 	if dir.length() > 0.1:
 		sprite.rotation = dir.angle() + PI / 2
@@ -154,6 +217,21 @@ func _on_died() -> void:
 	_command_queue.clear()
 	_move_indicator.hide_indicator()
 	EventBus.player_died.emit()
+
+
+# ── Range indicator ───────────────────────────────────────────────────────────
+
+class RangeIndicator:
+	extends Node2D
+	var _radius: float
+	var _color: Color
+
+	func _init(radius: float, color: Color) -> void:
+		_radius = radius
+		_color = Color(color.r, color.g, color.b, 0.55)
+
+	func _draw() -> void:
+		draw_arc(Vector2.ZERO, _radius, 0.0, TAU, 80, _color, 1.5, true)
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
@@ -315,6 +393,36 @@ class AttackMoveCommand:
 			_player.velocity = Vector2.ZERO
 			_player.move_and_slide()
 			return false
+		var next_pos := _nav_agent.get_next_path_position()
+		var dir := _player.global_position.direction_to(next_pos)
+		_player.velocity = dir * _player.get_speed()
+		_player.move_and_slide()
+		if dir.length() > 0.1:
+			_sprite.rotation = dir.angle() + PI / 2
+		return true
+
+
+class BlinkMoveCommand:
+	## Walk toward blink target until within skill's MAX_RANGE, then teleport.
+	var _player: CharacterBody2D
+	var _nav_agent: NavigationAgent2D
+	var _sprite: Polygon2D
+	var _target_pos: Vector2
+	var _skill  # ActiveTeleport instance
+
+	func _init(p: CharacterBody2D, nav: NavigationAgent2D, spr: Polygon2D,
+			target: Vector2, skill) -> void:
+		_player = p
+		_nav_agent = nav
+		_sprite = spr
+		_target_pos = target
+		_skill = skill
+
+	func tick(_delta: float) -> bool:
+		if _player.global_position.distance_to(_target_pos) <= _skill.MAX_RANGE:
+			_skill._do_blink(_player, _target_pos)
+			return false
+		_nav_agent.target_position = _target_pos
 		var next_pos := _nav_agent.get_next_path_position()
 		var dir := _player.global_position.direction_to(next_pos)
 		_player.velocity = dir * _player.get_speed()
