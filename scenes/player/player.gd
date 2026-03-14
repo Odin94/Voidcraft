@@ -24,6 +24,8 @@ var _active_abilities: Array = []
 # Non-null while the player is selecting a target position for an active skill.
 var _targeting_ability = null  # SkillBase or null
 var _range_indicator: Node2D = null
+var _is_selected: bool = false
+var _target_indicator: Node2D = null
 
 @onready var nav_agent: NavigationAgent2D = $NavigationAgent2D
 @onready var health_component: HealthComponent = $HealthComponent
@@ -45,6 +47,9 @@ func _ready() -> void:
 	_move_indicator.setup(self)
 	get_tree().current_scene.add_child.call_deferred(_move_indicator)
 	input_handler.setup(self, combat, building)
+	EventBus.entity_selected.connect(func(e): _is_selected = (e == self))
+	_target_indicator = TargetIndicator.new(self)
+	add_child(_target_indicator)
 	EventBus.entity_selected.emit(self)
 
 func _physics_process(delta: float) -> void:
@@ -118,6 +123,16 @@ func start_placing_building(data: BuildingData) -> void:
 
 func get_speed() -> float:
 	return SPEED + _speed_bonus
+
+## Returns the enemy the player is currently chasing or attacking, or null.
+func get_current_target() -> Node2D:
+	for cmd in _command_queue:
+		var t = cmd.get("_target")
+		if t == null:
+			t = cmd.get("_current_target")
+		if is_instance_valid(t):
+			return t
+	return null
 
 func get_stats() -> Dictionary:
 	return {
@@ -240,6 +255,30 @@ class RangeIndicator:
 
 	func _draw() -> void:
 		draw_arc(Vector2.ZERO, _radius, 0.0, TAU, 80, _color, 1.5, true)
+
+
+class TargetIndicator:
+	extends Node2D
+	var _player: CharacterBody2D
+
+	func _init(player: CharacterBody2D) -> void:
+		_player = player
+		z_index = 1
+
+	func _process(_delta: float) -> void:
+		var target: Node2D = _player.get_current_target()
+		if _player._is_selected and is_instance_valid(target):
+			visible = true
+			queue_redraw()
+		else:
+			visible = false
+
+	func _draw() -> void:
+		var target: Node2D = _player.get_current_target()
+		if not is_instance_valid(target):
+			return
+		var local_pos := to_local(target.global_position)
+		draw_arc(local_pos, 18.0, 0.0, TAU, 48, Color(1.0, 0.3, 0.3, 0.85), 1.5, true)
 
 
 # ── Commands ──────────────────────────────────────────────────────────────────
