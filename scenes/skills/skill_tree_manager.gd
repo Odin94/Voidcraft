@@ -89,10 +89,12 @@ func reapply_all() -> void:
 		if pick >= 0 and _skill_instances.has(level):
 			_skill_instances[level].apply_to_player(_player)
 
-## Returns live instances of non-passive (active) skills.
+## Returns live instances of non-passive (active) skills, sorted by level (ascending).
 func get_active_skills() -> Array:
 	var result: Array = []
-	for level in _skill_instances:
+	var levels: Array = _skill_instances.keys()
+	levels.sort()
+	for level in levels:
 		var skill = _skill_instances[level]
 		if skill != null and not skill.is_passive:
 			result.append(skill)

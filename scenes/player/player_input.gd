@@ -3,6 +3,8 @@ extends Node
 ## Routes mouse/keyboard input to player commands and selection events.
 ## Owns attack-move mode and selected-entity tracking for input routing.
 
+const ABILITY_HOTKEYS: Array = [KEY_Q, KEY_W, KEY_E, KEY_R, KEY_F, KEY_G]
+
 var _player: CharacterBody2D
 var _combat: PlayerCombat
 var _building: PlayerBuilding
@@ -53,6 +55,16 @@ func _unhandled_input(event: InputEvent) -> void:
 			_player.cancel_ability_targeting()
 			get_viewport().set_input_as_handled()
 		return  # Consume all other input while targeting
+
+	# Ability hotkeys Q/W/E/R/…
+	if event is InputEventKey and event.pressed and not event.echo:
+		for i in ABILITY_HOTKEYS.size():
+			if event.physical_keycode == ABILITY_HOTKEYS[i]:
+				var skills: Array = SkillTree.get_active_skills()
+				if i < skills.size():
+					_trigger_ability(skills[i])
+					get_viewport().set_input_as_handled()
+				return
 
 	# Enter attack-move mouse state (only when player itself is selected)
 	if event.is_action_pressed("attack_move") and _selected_entity == _player:
@@ -147,6 +159,12 @@ func _handle_right_click() -> void:
 	else:
 		print("[Player] right_click → moving to %s" % str(click_pos.snapped(Vector2.ONE)))
 		_player.queue_move_to(click_pos)
+
+func _trigger_ability(skill) -> void:
+	if _player._targeting_ability == skill:
+		_player.cancel_ability_targeting()
+	elif skill.can_activate():
+		_player.start_ability_targeting(skill)
 
 func _exit_attack_move_mode() -> void:
 	_attack_move_mode = false

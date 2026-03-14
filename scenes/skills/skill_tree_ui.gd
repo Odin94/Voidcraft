@@ -230,6 +230,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("cancel"):
 		visible = false
 		get_viewport().set_input_as_handled()
+	elif event is InputEventKey and event.pressed and not event.echo:
+		if event.physical_keycode == KEY_T:
+			visible = false
+			get_viewport().set_input_as_handled()
 
 func _on_skill_changed(_level: int, _option: int) -> void:
 	if visible:

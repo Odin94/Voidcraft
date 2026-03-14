@@ -40,7 +40,10 @@ func _process(_delta: float) -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.physical_keycode == KEY_T and GameManager.current_state == GameManager.GameState.HOME:
-			_open_skill_tree()
+			if _skill_tree_ui != null and _skill_tree_ui.visible:
+				_skill_tree_ui.visible = false
+			else:
+				_open_skill_tree()
 			get_viewport().set_input_as_handled()
 
 # ── Setup ──────────────────────────────────────────────────────────────────────
@@ -113,12 +116,16 @@ func _update_skill_tree_btn_label() -> void:
 func _on_active_abilities_changed(_abilities: Array) -> void:
 	_rebuild_ability_buttons()
 
+const ABILITY_HOTKEY_LABELS: Array = ["Q", "W", "E", "R", "F", "G"]
+
 func _rebuild_ability_buttons() -> void:
 	for child in _abilities_bar.get_children():
 		child.queue_free()
-	for skill in SkillTree.get_active_skills():
+	var skills: Array = SkillTree.get_active_skills()
+	for i in skills.size():
+		var skill = skills[i]
 		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(130, 50)
+		btn.custom_minimum_size = Vector2(160, 70)
 		btn.mouse_filter = Control.MOUSE_FILTER_STOP
 		var c: Color = skill.icon_color
 		btn.modulate = Color(c.r * 0.7 + 0.3, c.g * 0.7 + 0.3, c.b * 0.7 + 0.3, 1.0)
@@ -135,16 +142,18 @@ func _refresh_ability_buttons() -> void:
 	for i in skills.size():
 		var btn: Button = btns[i]
 		var skill = skills[i]
+		var hotkey: String = ABILITY_HOTKEY_LABELS[i] if i < ABILITY_HOTKEY_LABELS.size() else ""
+		var prefix: String = "[%s] " % hotkey if hotkey else ""
 		var cd: float = skill.get_cooldown_remaining()
 		var is_targeting: bool = (is_instance_valid(_player) and _player._targeting_ability == skill)
 		if cd > 0.0:
-			btn.text = "%s\n%.1fs" % [skill.display_name, cd]
+			btn.text = "%s%s\n%.1fs" % [prefix, skill.display_name, cd]
 			btn.disabled = true
 		elif is_targeting:
-			btn.text = "%s\n[targeting…]" % skill.display_name
+			btn.text = "%s%s\n[targeting…]" % [prefix, skill.display_name]
 			btn.disabled = false
 		else:
-			btn.text = skill.display_name
+			btn.text = "%s%s" % [prefix, skill.display_name]
 			btn.disabled = false
 
 func _on_ability_button_pressed(skill) -> void:
