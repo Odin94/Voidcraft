@@ -6,15 +6,15 @@ signal upgraded(new_level: int)
 var building_data: BuildingData
 var level: int = 1
 var _label: Label
-var _selection_border: ColorRect
+var _selection_circle: Node2D = null
 
 func _ready() -> void:
 	add_to_group("buildings")
 	EventBus.entity_selected.connect(_on_entity_selected)
 
 func _on_entity_selected(entity: Node2D) -> void:
-	if is_instance_valid(_selection_border):
-		_selection_border.visible = (entity == self)
+	if is_instance_valid(_selection_circle):
+		_selection_circle.visible = (entity == self)
 
 ## Called by the player's input router when this building is selected.
 ## Extend here to add building-specific interactions (e.g. rally points).
@@ -26,15 +26,13 @@ func setup(data: BuildingData) -> void:
 	level = 1
 	collision_layer = 32  # Layer 6 (Building)
 	collision_mask = 0
-	# Selection border — rendered first so it sits behind the building visual.
-	var border_size := Vector2(data.size) * 32 + Vector2(6, 6)
-	_selection_border = ColorRect.new()
-	_selection_border.size = border_size
-	_selection_border.position = -border_size / 2
-	_selection_border.color = Color(1.0, 0.9, 0.1, 1.0)
-	_selection_border.visible = false
-	_selection_border.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_selection_border)
+	# Selection circle — drawn behind the building visual.
+	var half := Vector2(data.size) * 32.0 / 2.0
+	var sel_radius := maxf(half.x, half.y) + 6.0
+	_selection_circle = preload("res://scenes/ui/selection_circle.gd").new()
+	_selection_circle.radius = sel_radius
+	_selection_circle.visible = false
+	add_child(_selection_circle)
 	var visual := ColorRect.new()
 	visual.size = Vector2(data.size) * 32
 	visual.position = -visual.size / 2

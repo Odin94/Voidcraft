@@ -47,7 +47,10 @@ func _ready() -> void:
 	_move_indicator.setup(self)
 	get_tree().current_scene.add_child.call_deferred(_move_indicator)
 	input_handler.setup(self, combat, building)
-	EventBus.entity_selected.connect(func(e): _is_selected = (e == self))
+	EventBus.entity_selected.connect(func(e):
+		_is_selected = (e == self)
+		queue_redraw()
+	)
 	_target_indicator = TargetIndicator.new(self)
 	add_child(_target_indicator)
 	EventBus.entity_selected.emit(self)
@@ -210,6 +213,10 @@ func _hide_range_indicator() -> void:
 	if is_instance_valid(_range_indicator):
 		_range_indicator.queue_free()
 	_range_indicator = null
+
+func _draw() -> void:
+	if _is_selected:
+		draw_arc(Vector2.ZERO, 17.0, 0.0, TAU, 48, Color(1.0, 1.0, 1.0, 0.30), 1.5, true)
 
 func face_direction(dir: Vector2) -> void:
 	if dir.length() > 0.1:
