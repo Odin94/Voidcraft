@@ -119,6 +119,14 @@ func start_placing_building(data: BuildingData) -> void:
 func get_speed() -> float:
 	return SPEED + _speed_bonus
 
+func get_stats() -> Dictionary:
+	return {
+		"damage": combat.damage,
+		"attack_cooldown": PlayerCombat.ATTACK_COOLDOWN,
+		"speed": get_speed(),
+		"max_hp": health_component.max_hp,
+	}
+
 func apply_damage_upgrade(amount: float) -> void:
 	combat.damage += amount
 	print("[Player] damage upgraded to %.1f" % combat.damage)

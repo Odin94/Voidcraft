@@ -46,7 +46,13 @@ func _show_player(player: Node2D) -> void:
 		_set_hp(hc.current_hp, hc.max_hp)
 		if not hc.health_changed.is_connected(_on_hp_changed):
 			hc.health_changed.connect(_on_hp_changed)
-	detail_label.text = "ATK: 15  |  ATK Speed: 0.5s  |  Move: 200"
+	if player.has_method("get_stats"):
+		var s: Dictionary = player.get_stats()
+		detail_label.text = "ATK: %d  |  ATK Speed: %.1fs  |  Move: %d  |  Max HP: %d" % [
+			int(s["damage"]), s["attack_cooldown"], int(s["speed"]), int(s["max_hp"])
+		]
+	else:
+		detail_label.text = ""
 
 func _show_building(building: Node2D) -> void:
 	var data: BuildingData = building.building_data
