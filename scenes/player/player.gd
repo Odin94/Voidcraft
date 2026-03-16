@@ -38,6 +38,13 @@ var _target_indicator: Node2D = null
 func _ready() -> void:
 	nav_agent.max_speed = SPEED
 	health_component.died.connect(_on_died)
+	var light := PointLight2D.new()
+	light.texture = _make_light_texture()
+	light.texture_scale = 4.0
+	light.energy = 0.5
+	light.color = Color(0.95, 0.85, 0.6)
+	light.blend_mode = PointLight2D.BLEND_MODE_ADD
+	add_child(light)
 	health_component.health_changed.connect(_on_health_changed)
 	combat.setup(self, sprite)
 	building.setup(self)
@@ -247,6 +254,22 @@ func _on_died() -> void:
 	_command_queue.clear()
 	_move_indicator.hide_indicator()
 	EventBus.player_died.emit()
+
+
+# ── Helpers ───────────────────────────────────────────────────────────────────
+
+static func _make_light_texture() -> GradientTexture2D:
+	var gradient := Gradient.new()
+	gradient.set_color(0, Color(1, 1, 1, 1))
+	gradient.set_color(1, Color(1, 1, 1, 0))
+	var tex := GradientTexture2D.new()
+	tex.gradient = gradient
+	tex.fill = GradientTexture2D.FILL_RADIAL
+	tex.fill_from = Vector2(0.5, 0.5)
+	tex.fill_to = Vector2(1.0, 0.5)
+	tex.width = 128
+	tex.height = 128
+	return tex
 
 
 # ── Range indicator ───────────────────────────────────────────────────────────

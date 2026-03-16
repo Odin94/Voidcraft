@@ -21,6 +21,7 @@ EventBus="*res://autoloads/event_bus.gd"
 GameManager="*res://autoloads/game_manager.gd"
 ResourceManager="*res://autoloads/resource_manager.gd"
 SkillTree="*res://scenes/skills/skill_tree_manager.gd"
+FogOfWar="*res://autoloads/fog_of_war.gd"
 
 [display]
 
