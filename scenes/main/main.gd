@@ -20,6 +20,7 @@ func _ready() -> void:
 	building_menu.set_player(player)
 	# Start camera centred on player
 	camera.global_position = player.global_position
+	camera.add_to_group("camera")
 	# Load home base
 	var home_scene := load("res://scenes/maps/home_base.tscn") as PackedScene
 	var home := home_scene.instantiate()

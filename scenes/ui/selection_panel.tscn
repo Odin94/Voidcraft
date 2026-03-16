@@ -22,7 +22,7 @@ layout_mode = 2
 [node name="MinimapArea" type="Control" parent="Panel/HBox"]
 layout_mode = 2
 custom_minimum_size = Vector2(213, 160)
-mouse_filter = 2
+mouse_filter = 0
 script = ExtResource("2")
 
 [node name="VSep1" type="VSeparator" parent="Panel/HBox"]
