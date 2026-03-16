@@ -1,10 +1,12 @@
 extends CharacterBody2D
 ## Base enemy with aggro detection, navigation, and melee attack.
 
-enum State { IDLE, CHASING, ATTACKING, RETURNING }
+enum State { IDLE, CHASING, ATTACKING, RETURNING, INVESTIGATING }
 
 const MAP_BOUNDS := Rect2(0, 0, 1280, 720)
 const OUT_OF_BOUNDS_KILL_TIME := 10.0
+const INVESTIGATE_ARRIVE_DIST := 20.0
+const INVESTIGATE_WAIT := 1.0
 
 var state: State = State.IDLE
 var enemy_data: EnemyData
@@ -12,6 +14,10 @@ var target: Node2D = null
 var attack_timer: float = 0.0
 var out_of_bounds_timer: float = 0.0
 var spawn_position: Vector2
+
+var _last_known_pos: Vector2 = Vector2.ZERO
+var _reached_last_known: bool = false
+var _investigate_timer: float = 0.0
 
 @onready var nav_agent: NavigationAgent2D = $NavigationAgent2D
 @onready var health_component: HealthComponent = $HealthComponent
@@ -52,14 +58,25 @@ func _physics_process(delta: float) -> void:
 			_handle_attacking(delta)
 		State.RETURNING:
 			_handle_returning()
+		State.INVESTIGATING:
+			_handle_investigating(delta)
 
 	_check_bounds(delta)
 
 func _handle_chasing() -> void:
 	if not is_instance_valid(target):
-		target = null
-		state = State.RETURNING
+		_begin_investigating()
 		return
+
+	# Continuously update last known position while we have eyes on target
+	_last_known_pos = target.global_position
+
+	# Drop target if it ducked into a vision blocker we are not inside
+	var target_blocker = FogOfWar.get_blocker_for(target)
+	if target_blocker != null and not target_blocker.has_node_inside(self):
+		_begin_investigating()
+		return
+
 	var dist := global_position.distance_to(target.global_position)
 	if dist <= enemy_data.attack_range:
 		state = State.ATTACKING
@@ -99,6 +116,52 @@ func _handle_returning() -> void:
 	nav_agent.velocity = direction * enemy_data.speed
 	sprite.rotation = direction.angle() + PI / 2
 
+func _handle_investigating(delta: float) -> void:
+	# Phase 1: move to the last known position
+	if not _reached_last_known:
+		if global_position.distance_to(_last_known_pos) < INVESTIGATE_ARRIVE_DIST:
+			_reached_last_known = true
+			velocity = Vector2.ZERO
+			move_and_slide()
+		else:
+			nav_agent.target_position = _last_known_pos
+			var next_pos := nav_agent.get_next_path_position()
+			var direction := global_position.direction_to(next_pos)
+			nav_agent.velocity = direction * enemy_data.speed
+			sprite.rotation = direction.angle() + PI / 2
+		return
+
+	# Phase 2: stand at last known position and scan for 1s
+	velocity = Vector2.ZERO
+	move_and_slide()
+	_investigate_timer -= delta
+
+	for player in get_tree().get_nodes_in_group("player"):
+		if not is_instance_valid(player):
+			continue
+		if global_position.distance_to(player.global_position) > enemy_data.aggro_range:
+			continue
+		var player_blocker = FogOfWar.get_blocker_for(player)
+		if player_blocker != null and not player_blocker.has_node_inside(self):
+			continue
+		# Player spotted — resume chase
+		print("[Enemy] investigating: spotted player, resuming chase")
+		target = player
+		state = State.CHASING
+		return
+
+	if _investigate_timer <= 0.0:
+		print("[Enemy] investigating: gave up, returning to spawn")
+		state = State.RETURNING
+
+func _begin_investigating() -> void:
+	# _last_known_pos must be set before calling this
+	target = null
+	_reached_last_known = false
+	_investigate_timer = INVESTIGATE_WAIT
+	state = State.INVESTIGATING
+	print("[Enemy] lost sight of player at %s, investigating" % _last_known_pos)
+
 func _check_bounds(delta: float) -> void:
 	if not MAP_BOUNDS.has_point(global_position):
 		out_of_bounds_timer += delta
@@ -116,14 +179,18 @@ func _deal_damage() -> void:
 		target.get_node("HealthComponent").take_damage(enemy_data.damage)
 
 func _on_aggro_body_entered(body: Node2D) -> void:
-	if body.is_in_group("player") and state in [State.IDLE, State.RETURNING]:
+	if body.is_in_group("player") and state in [State.IDLE, State.RETURNING, State.INVESTIGATING]:
+		# Don't aggro if the player is hidden in a bush we are not inside
+		var player_blocker = FogOfWar.get_blocker_for(body)
+		if player_blocker != null and not player_blocker.has_node_inside(self):
+			return
 		target = body
 		state = State.CHASING
 
 func _on_aggro_body_exited(body: Node2D) -> void:
 	if body == target and state == State.CHASING:
-		target = null
-		state = State.RETURNING
+		_last_known_pos = body.global_position
+		_begin_investigating()
 
 func _on_health_changed(current: float, max_hp: float) -> void:
 	if health_bar:

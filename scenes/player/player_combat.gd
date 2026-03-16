@@ -50,7 +50,7 @@ func find_nearest_enemy_in_range(origin: Vector2, range: float) -> Node2D:
 	var nearest_dist := INF
 	for r in results:
 		var body := r.collider as Node2D
-		if is_instance_valid(body):
+		if is_instance_valid(body) and body.visible:
 			var dist := origin.distance_to(body.global_position)
 			if dist < nearest_dist:
 				nearest_dist = dist
@@ -67,5 +67,7 @@ func find_enemy_at(pos: Vector2) -> Node2D:
 	query.collide_with_bodies = true
 	var results := space.intersect_point(query, 1)
 	if results.size() > 0:
-		return results[0].collider
+		var body := results[0].collider as Node2D
+		if is_instance_valid(body) and body.visible:
+			return body
 	return null

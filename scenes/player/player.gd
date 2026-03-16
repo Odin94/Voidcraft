@@ -44,6 +44,8 @@ func _ready() -> void:
 	light.energy = 0.5
 	light.color = Color(0.95, 0.85, 0.6)
 	light.blend_mode = PointLight2D.BLEND_MODE_ADD
+	light.shadow_enabled = true
+	light.shadow_filter = PointLight2D.SHADOW_FILTER_PCF5
 	add_child(light)
 	health_component.health_changed.connect(_on_health_changed)
 	combat.setup(self, sprite)
