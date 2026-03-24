@@ -11,7 +11,8 @@ speed = 60.0
 attack_range = 50.0
 aggro_range = 250.0
 attack_cooldown = 2.0
-color = Color(0.7, 0.1, 0.1, 1)
+color = Color(0.75, 0.2, 0.05, 1)
+shape_type = 3
 rewards = {
 "crystal": 12,
 "metal": 5

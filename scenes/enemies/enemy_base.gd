@@ -40,6 +40,7 @@ func setup(data: EnemyData, difficulty_mult: float = 1.0) -> void:
 	health_component.current_hp = health_component.max_hp
 	nav_agent.max_speed = data.speed
 	sprite.color = data.color
+	sprite.polygon = _make_shape_polygon(data.shape_type)
 	# Set aggro range
 	var aggro_shape := aggro_area.get_node("CollisionShape2D") as CollisionShape2D
 	if aggro_shape and aggro_shape.shape is CircleShape2D:
@@ -173,6 +174,17 @@ func _check_bounds(delta: float) -> void:
 		global_position = global_position.clamp(MAP_BOUNDS.position, MAP_BOUNDS.end)
 	else:
 		out_of_bounds_timer = 0.0
+
+func _make_shape_polygon(shape_type: int) -> PackedVector2Array:
+	match shape_type:
+		1: # Triangle — trifurcator
+			return PackedVector2Array([Vector2(0, -14), Vector2(12, 10), Vector2(-12, 10)])
+		2: # Diamond — bomber
+			return PackedVector2Array([Vector2(0, -15), Vector2(11, 0), Vector2(0, 15), Vector2(-11, 0)])
+		3: # Pentagon — brute
+			return PackedVector2Array([Vector2(0, -18), Vector2(17, -6), Vector2(11, 15), Vector2(-11, 15), Vector2(-17, -6)])
+		_: # Square — grunt (default)
+			return PackedVector2Array([Vector2(-10, -10), Vector2(10, -10), Vector2(10, 10), Vector2(-10, 10)])
 
 func _deal_damage() -> void:
 	if is_instance_valid(target) and target.has_node("HealthComponent"):

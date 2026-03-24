@@ -2,8 +2,12 @@ extends Node
 ## Generates procedural obstacles and enemies for combat maps.
 
 const ENEMY_SCENE := preload("res://scenes/enemies/enemy_base.tscn")
+const TRIFURCATOR_SCENE := preload("res://scenes/enemies/trifurcator_enemy.tscn")
+const BOMBER_SCENE := preload("res://scenes/enemies/bomber_enemy.tscn")
 const GRUNT_DATA := preload("res://resources/enemies/grunt.tres")
 const BRUTE_DATA := preload("res://resources/enemies/brute.tres")
+const TRIFURCATOR_DATA := preload("res://resources/enemies/trifurcator.tres")
+const BOMBER_DATA := preload("res://resources/enemies/bomber.tres")
 const VISION_BLOCKER_SCRIPT := preload("res://scenes/maps/vision_blocker.gd")
 
 const MAP_SIZE := Vector2(1280, 720)
@@ -84,7 +88,6 @@ func _spawn_enemies(combat_map: Node2D, depth: int) -> void:
 	var difficulty := GameManager.get_difficulty_multiplier()
 
 	for i in count:
-		var enemy := ENEMY_SCENE.instantiate()
 		var pos := Vector2(
 			randf_range(MARGIN, MAP_SIZE.x - MARGIN),
 			randf_range(MARGIN, MAP_SIZE.y - MARGIN)
@@ -95,8 +98,23 @@ func _spawn_enemies(combat_map: Node2D, depth: int) -> void:
 				randf_range(MARGIN, MAP_SIZE.x - MARGIN),
 				randf_range(MARGIN, MAP_SIZE.y - MARGIN)
 			)
+		# Pick enemy type: 40% grunt, 25% brute, 25% trifurcator, 10% bomber
+		var roll := randi() % 10
+		var scene: PackedScene
+		var data: EnemyData
+		if roll < 4:
+			scene = ENEMY_SCENE
+			data = GRUNT_DATA
+		elif roll < 6:
+			scene = ENEMY_SCENE
+			data = BRUTE_DATA
+		elif roll < 9:
+			scene = TRIFURCATOR_SCENE
+			data = TRIFURCATOR_DATA
+		else:
+			scene = BOMBER_SCENE
+			data = BOMBER_DATA
+		var enemy := scene.instantiate()
 		enemy.position = pos
 		enemies_node.add_child(enemy)
-		# Use brute for every 3rd enemy
-		var data: EnemyData = BRUTE_DATA if (i % 3 == 2) else GRUNT_DATA
 		enemy.setup(data, difficulty)

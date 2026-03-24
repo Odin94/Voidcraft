@@ -10,5 +10,7 @@ extends Resource
 @export var aggro_range: float = 200.0
 @export var attack_cooldown: float = 1.0
 @export var color: Color = Color.RED
+## 0=Square  1=Triangle  2=Diamond  3=Pentagon
+@export var shape_type: int = 0
 @export var rewards: Dictionary = { "crystal": 5 }
 @export var xp_reward: int = 10
