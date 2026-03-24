@@ -45,6 +45,10 @@ func setup(data: EnemyData, difficulty_mult: float = 1.0) -> void:
 	var aggro_shape := aggro_area.get_node("CollisionShape2D") as CollisionShape2D
 	if aggro_shape and aggro_shape.shape is CircleShape2D:
 		(aggro_shape.shape as CircleShape2D).radius = data.aggro_range
+	# body_entered never fires for bodies already inside the area at spawn time,
+	# and Godot doesn't re-evaluate overlaps when a shape is resized.
+	# Defer a manual overlap check so physics has settled first.
+	call_deferred("_check_initial_aggro")
 
 func _physics_process(delta: float) -> void:
 	attack_timer = maxf(attack_timer - delta, 0.0)
@@ -53,6 +57,7 @@ func _physics_process(delta: float) -> void:
 		State.IDLE:
 			velocity = Vector2.ZERO
 			move_and_slide()
+			_idle_aggro_scan()
 		State.CHASING:
 			_handle_chasing()
 		State.ATTACKING:
@@ -186,9 +191,38 @@ func _make_shape_polygon(shape_type: int) -> PackedVector2Array:
 		_: # Square — grunt (default)
 			return PackedVector2Array([Vector2(-10, -10), Vector2(10, -10), Vector2(10, 10), Vector2(-10, 10)])
 
+func _check_initial_aggro() -> void:
+	# Catches players already inside the aggro area at spawn time.
+	for body in aggro_area.get_overlapping_bodies():
+		_on_aggro_body_entered(body)
+
+func _idle_aggro_scan() -> void:
+	# Fallback: every physics frame while idle, do a direct distance check.
+	# Ensures enemies never get permanently stuck ignoring a nearby player.
+	if enemy_data == null:
+		return
+	for player in get_tree().get_nodes_in_group("player"):
+		if not is_instance_valid(player):
+			continue
+		if global_position.distance_to(player.global_position) > enemy_data.aggro_range:
+			continue
+		var blocker = FogOfWar.get_blocker_for(player)
+		if blocker != null and not blocker.has_node_inside(self):
+			continue
+		target = player
+		state = State.CHASING
+		print("[Enemy] idle scan: spotted player, chasing")
+		return
+
 func _deal_damage() -> void:
 	if is_instance_valid(target) and target.has_node("HealthComponent"):
 		target.get_node("HealthComponent").take_damage(enemy_data.damage)
+	_play_attack_anim()
+
+func _play_attack_anim() -> void:
+	var tween := create_tween()
+	tween.tween_property(sprite, "scale", Vector2(1.5, 1.5), 0.07)
+	tween.tween_property(sprite, "scale", Vector2(1.0, 1.0), 0.14)
 
 func _on_aggro_body_entered(body: Node2D) -> void:
 	if body.is_in_group("player") and state in [State.IDLE, State.RETURNING, State.INVESTIGATING]:
@@ -209,6 +243,9 @@ func _on_health_changed(current: float, max_hp: float) -> void:
 		health_bar.update_bar(current, max_hp)
 
 func _on_velocity_computed(safe_velocity: Vector2) -> void:
+	# Don't let the nav agent override velocity when we should be standing still
+	if state == State.IDLE or state == State.ATTACKING:
+		return
 	velocity = safe_velocity
 	move_and_slide()
 

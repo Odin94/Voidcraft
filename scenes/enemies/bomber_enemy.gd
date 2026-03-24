@@ -15,34 +15,36 @@ func setup(data: EnemyData, difficulty_mult: float = 1.0) -> void:
 	_base_color = data.color
 
 func _handle_attacking(delta: float) -> void:
-	if not is_instance_valid(target):
-		target = null
-		state = State.RETURNING
-		_cancel_fuse()
-		return
-	var dist := global_position.distance_to(target.global_position)
-	if dist > enemy_data.attack_range * 1.2:
-		_cancel_fuse()
-		state = State.CHASING
-		return
-	velocity = Vector2.ZERO
-	move_and_slide()
-	if not _is_fusing:
-		_is_fusing = true
-		_fuse_timer = FUSE_TIME
-		print("[Bomber] fuse lit!")
-	else:
+	# Once fuse is lit the bomber is committed — it charges straight at the player
+	# ignoring nav avoidance so nothing can stop the explosion.
+	if _is_fusing:
 		_fuse_timer -= delta
 		var t := Time.get_ticks_msec() / 1000.0
 		var pulse := (sin(t * PULSE_SPEED) + 1.0) * 0.5
 		sprite.color = _base_color.lerp(Color.WHITE, pulse * 0.85)
+		if is_instance_valid(target):
+			var dir := global_position.direction_to(target.global_position)
+			velocity = dir * enemy_data.speed
+			move_and_slide()
+			sprite.rotation = dir.angle() + PI / 2
 		if _fuse_timer <= 0.0:
 			_explode()
+		return
 
-func _cancel_fuse() -> void:
-	_is_fusing = false
-	if enemy_data:
-		sprite.color = enemy_data.color
+	if not is_instance_valid(target):
+		target = null
+		state = State.RETURNING
+		return
+	var dist := global_position.distance_to(target.global_position)
+	if dist > enemy_data.attack_range * 1.2:
+		state = State.CHASING
+		return
+	# In range — light the fuse
+	velocity = Vector2.ZERO
+	move_and_slide()
+	_is_fusing = true
+	_fuse_timer = FUSE_TIME
+	print("[Bomber] fuse lit!")
 
 func _explode() -> void:
 	print("[Bomber] exploding at %s" % str(global_position.snapped(Vector2.ONE)))

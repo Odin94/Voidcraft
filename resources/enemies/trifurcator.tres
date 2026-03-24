@@ -6,7 +6,7 @@
 script = ExtResource("1")
 display_name = "Trifurcator"
 hp = 60.0
-damage = 12.0
+damage = 22.0
 speed = 80.0
 attack_range = 220.0
 aggro_range = 300.0
